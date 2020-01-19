@@ -1,35 +1,36 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
 
-import {
-  View,
-  KeyboardAvoidingView,
-  Platform,
-  Image,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet
-} from "react-native";
+import { View, KeyboardAvoidingView, AsyncStorage, Platform, Image, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 
-import api from "../services/api";
+import api from '../services/api';
 
-import logo from "../assets/logo.png";
+import logo from '../assets/logo.png';
 
-export default function Login() {
-  const [email, setEmail] = useState("");
-  const [techs, setTechs] = useState("");
+export default function Login({ navigation }) {
+  const [email, setEmail] = useState('');
+  const [techs, setTechs] = useState('');
+
+  useEffect(() => {
+    AsyncStorage.getItem('user').then(user => {
+      if (user) navigation.navigate('List');
+    });
+  }, []);
 
   async function handleSubmit() {
-    console.log(email);
-    console.log(techs);
+    const response = await api.post('/sessions', {
+      email
+    });
+
+    const { _id } = response.data;
+
+    await AsyncStorage.setItem('user', _id);
+    await AsyncStorage.setItem('techs', techs);
+
+    navigation.navigate('List');
   }
 
   return (
-    <KeyboardAvoidingView
-      enabled={Platform.OS === "ios"}
-      behavior="padding"
-      style={styles.container}
-    >
+    <KeyboardAvoidingView enabled={Platform.OS === 'ios'} behavior="padding" style={styles.container}>
       <Image source={logo} />
 
       <View style={styles.form}>
@@ -56,7 +57,7 @@ export default function Login() {
           onChangeText={setTechs}
         />
 
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity onPress={handleSubmit} style={styles.button}>
           <Text style={styles.buttonText}>Encontrar spots</Text>
         </TouchableOpacity>
       </View>
@@ -67,28 +68,28 @@ export default function Login() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center"
+    justifyContent: 'center',
+    alignItems: 'center'
   },
 
   form: {
-    alignSelf: "stretch",
+    alignSelf: 'stretch',
     paddingHorizontal: 30,
     marginTop: 30
   },
 
   label: {
-    fontWeight: "bold",
-    color: "#444",
+    fontWeight: 'bold',
+    color: '#444',
     marginBottom: 8
   },
 
   input: {
     borderWidth: 1,
-    borderColor: "#DDD",
+    borderColor: '#DDD',
     paddingHorizontal: 20,
     fontSize: 16,
-    color: "#444",
+    color: '#444',
     height: 44,
     marginBottom: 20,
     borderRadius: 4
@@ -96,15 +97,15 @@ const styles = StyleSheet.create({
 
   button: {
     height: 42,
-    backgroundColor: "#f05a5b",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#f05a5b',
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRadius: 2
   },
 
   buttonText: {
-    color: "#FFF",
-    fontWeight: "bold",
+    color: '#FFF',
+    fontWeight: 'bold',
     fontSize: 16
   }
 });
