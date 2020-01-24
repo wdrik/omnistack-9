@@ -6,7 +6,7 @@ module.exports = {
 
     const booking = await Booking.findById(booking_id).populate('spot');
 
-    booking.approved = true;
+    booking.approved = false;
 
     await booking.save();
 
